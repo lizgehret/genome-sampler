@@ -1,15 +1,13 @@
-{% set data = load_setup_py_data() %}
-{% set version = data.get('version') or 'placehold' %}
-{% set release = '.'.join(version.split('.')[:2]) %}
-
 package:
   name: genome-sampler
-  version: {{ version }}
+  version: {{ PLUGIN_VERSION }}
 
 source:
   path: ../..
 
 build:
+  script-env:
+    - PLUGIN_VERSION
   script: make install
 
 requirements:
@@ -20,16 +18,23 @@ requirements:
   run:
     - python {{ python }}
     - vsearch
-    - pandas
-    - qiime2 {{ release }}.*
-    - q2-types {{ release }}.*
-    - q2templates {{ release }}.*
+    - pandas {{ pandas }}
+    - qiime2 {{ qiime2_epoch }}.*
+    - q2-types {{ qiime2_epoch }}.*
+    - q2templates {{ qiime2_epoch }}.*
     - pyvcf
 
 test:
+  requires:
+    - qiime2 >={{ qiime2 }}
+    - q2-types >={{ q2_types }}
+
   imports:
     - genome_sampler
     - qiime2.plugins.genome_sampler
+
+  commands:
+    - py.test --pyargs genome_sampler
 
 about:
   home: https://github.com/caporaso-lab/genome-sampler
